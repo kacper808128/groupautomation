@@ -1,0 +1,135 @@
+# Facebook Group Automation - Configuration
+# Anti-Ban Settings 2025
+
+browser:
+  headless: false  # OBOWIĄZKOWE - headless=true = instant flag w 2025
+  browser_type: chromium  # tylko chromium - Firefox/Webkit gorzej wspierane
+  slow_mo: 50  # ms delay między akcjami Playwright
+
+proxy:
+  enabled: true
+  test_on_start: true  # sprawdzenie IP przez api.ipify.org
+  test_url: "https://api.ipify.org?format=json"
+  sticky_session_minutes: 60  # minimum 30-60 min
+  retry_on_failure: true
+  max_retries: 3
+
+fingerprint:
+  # Pula rozdzielczości ekranu (20 najpopularniejszych)
+  screen_resolutions:
+    - [1920, 1080]
+    - [1366, 768]
+    - [1536, 864]
+    - [1440, 900]
+    - [1280, 720]
+    - [1600, 900]
+    - [1280, 800]
+    - [1280, 1024]
+    - [1024, 768]
+    - [1680, 1050]
+    - [1920, 1200]
+    - [2560, 1440]
+    - [1360, 768]
+    - [1152, 864]
+    - [1400, 1050]
+    - [1600, 1024]
+    - [1792, 1120]
+    - [2048, 1152]
+    - [2304, 1296]
+    - [2560, 1080]
+
+  # Hardware concurrency (4-16 rdzeni)
+  hardware_concurrency_range: [4, 16]
+
+  # Timezones polskie/europejskie
+  timezones:
+    - "Europe/Warsaw"
+    - "Europe/Berlin"
+    - "Europe/Prague"
+    - "Europe/Vienna"
+    - "Europe/Budapest"
+
+  # Locales
+  locales:
+    - "pl-PL"
+    - "pl"
+    - "en-US"
+    - "de-DE"
+
+human_behavior:
+  # Ruchy myszką - Bezier curves
+  mouse:
+    speed_range: [400, 1200]  # px/s
+    overshoot_percent: [5, 15]
+    bezier_points: [3, 7]  # liczba punktów pośrednich
+
+  # Pisanie tekstu
+  typing:
+    delay_range: [120, 380]  # ms między znakami
+    typo_probability: 0.03  # 3% szans na literówkę
+    typo_fix_delay: [200, 600]  # ms na poprawienie
+
+  # Scrollowanie
+  scrolling:
+    pre_post_duration: [15, 60]  # sekundy przed napisaniem posta
+    post_publish_duration: [45, 240]  # sekundy po opublikowaniu
+    speed_variation: 0.3  # 30% wariacja prędkości
+
+  # Interakcje na grupie
+  group_engagement:
+    click_posts_range: [2, 5]
+    like_posts_range: [0, 2]
+    comment_probability: 0.1  # 10% szans na komentarz
+    time_on_group: [20, 90]  # sekundy
+
+activity_limits:
+  # Hard limits - nie do dyskusji
+  max_posts_per_day: 12  # lepiej 6-10
+  max_actions_per_day: 40  # lajki + komentarze + posty
+
+  # Warming mode (pierwsze 7-14 dni)
+  warming:
+    enabled: true
+    duration_days: 10
+    max_actions_per_day: 20
+    posts_allowed: false
+
+  # Czasy między akcjami
+  delays:
+    between_groups_minutes: [4, 18]  # średnio 9-11 min
+    between_accounts_seconds: [30, 120]  # stagger start
+    between_posts_minutes: [15, 45]
+
+error_handling:
+  # Checkpoint/captcha detection
+  ban_keywords:
+    - "Twoje konto jest tymczasowo zablokowane"
+    - "Potwierdź tożsamość"
+    - "Twoje konto zostało zablokowane"
+    - "This account has been suspended"
+    - "Confirm your identity"
+    - "Account temporarily locked"
+
+  # Retry logic
+  max_retries_per_action: 3
+
+  # Auto-pauza
+  auto_pause_on_bans: 2  # pauza gdy >2 konta zbanowane w ciągu godziny
+
+  # Losowe "ludzkie błędy"
+  human_error_frequency: 12  # raz na 10-15 postów
+
+multi_account:
+  # Max kont jednocześnie na jednym komputerze
+  max_concurrent_accounts: 5  # 4-6 max, więcej = ryzyko hardware ban
+
+  # Queue system
+  queue_strategy: "round_robin"  # round_robin, random, priority
+
+  # Session refresh
+  session_refresh_days: [3, 7]
+
+logging:
+  level: "INFO"
+  screenshot_on_error: true
+  log_file: "logs/automation.log"
