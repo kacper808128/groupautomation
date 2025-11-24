@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Group Automation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Nagłówek -->
+        <header class="header">
+            <h1>✅ Facebook Group Automation</h1>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Nieaktywny</span>
+            </div>
+        </header>
+
+        <!-- Główna zawartość -->
+        <div class="main-content">
+            <!-- Sidebar z nawigacją -->
+            <aside class="sidebar">
+                <nav class="nav">
+                    <button class="nav-btn active" data-tab="credentials">
+                        🔐 Logowanie
+                    </button>
+                    <button class="nav-btn" data-tab="posting">
+                        📝 Postowanie
+                    </button>
+                    <button class="nav-btn" data-tab="schedule">
+                        📅 Harmonogram
+                    </button>
+                    <button class="nav-btn" data-tab="instagram">
+                        📊 Instagram Checker
+                    </button>
+                    <button class="nav-btn" data-tab="playground">
+                        🎮 Playground
+                    </button>
+                    <button class="nav-btn" data-tab="proxy">
+                        🌐 Proxy
+                    </button>
+                    <button class="nav-btn" data-tab="logs">
+                        📋 Logi
+                    </button>
+                    <button class="nav-btn" data-tab="settings">
+                        ⚙️ Ustawienia
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Panele zawartości -->
+            <main class="content">
+                <!-- Panel logowania -->
+                <div class="tab-content active" id="credentials">
+                    <h2>Dane logowania Facebook</h2>
+                    <div class="card">
+                        <form id="credentialsForm">
+                            <div class="form-group">
+                                <label for="email">Email / Telefon:</label>
+                                <input type="text" id="email" placeholder="Twój email lub numer telefonu" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Hasło:</label>
+                                <input type="password" id="password" placeholder="Twoje hasło" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">💾 Zapisz dane</button>
+                                <button type="button" class="btn btn-secondary" id="testLoginBtn">🔍 Testuj logowanie</button>
+                            </div>
+                        </form>
+                        <div class="info-box">
+                            <strong>🔒 Bezpieczeństwo:</strong>
+                            <p>Dane są szyfrowane AES-256-GCM i przechowywane lokalnie na Twoim komputerze.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel postowania -->
+                <div class="tab-content" id="posting">
+                    <h2>Automatyczne postowanie</h2>
+                    <div class="card">
+                        <div class="form-group">
+                            <label>🔑 Konta Facebook (cookies)</label>
+                            <div id="accountsList" style="margin-bottom: 15px;">
+                                <div class="account-item" style="background: #1a1a1a; padding: 15px; border-radius: 5px; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <strong style="color: #00ff88;">Konto #1</strong>
+                                        <button class="btn btn-danger btn-sm" onclick="removeAccount(0)" style="padding: 5px 10px; font-size: 12px;">
+                                            🗑️ Usuń
+                                        </button>
+                                    </div>
+                                    <textarea 
+                                        id="account-0-cookies" 
+                                        rows="4"
+                                        class="form-control"
+                                        style="font-size: 12px;"
+                                        placeholder='[{"name":"c_user","value":"xxx","domain":".facebook.com"}]'
+                                    ></textarea>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-success" id="addAccountBtn" style="width: 100%; margin-bottom: 10px;">
+                                ➕ Dodaj kolejne konto
+                            </button>
+                            
+                            <button class="btn btn-primary" id="saveAllAccountsBtn" style="width: 100%;">
+                                💾 Zapisz wszystkie konta
+                            </button>
+                            
+                            <small class="text-muted" style="display: block; margin-top: 10px;">
+                                ⚡ Posty zostaną równomiernie rozdzielone między wszystkie konta<br>
+                                🚀 Każde konto uruchomi się w osobnej instancji przeglądarki<br>
+                                📊 Przy 3 kontach i 9 postach: każde konto dostanie 3 posty
+                            </small>
+                        </div>
+
+                        <hr style="margin: 20px 0; border: 1px solid #333;">
+
+                        <div class="form-group">
+                            <label>📂 Import z CSV</label>
+                            <input 
+                                type="file" 
+                                id="csvFileInput" 
+                                accept=".csv"
+                                class="form-control"
+                                style="padding: 10px; background: #1a1a1a; border: 2px dashed #444; cursor: pointer;"
+                            >
+                            <small class="text-muted">
+                                Format CSV: group_link, post_copy, group_name, group_id, post_language, job_title, job_url, job_company, generated_at, ready_to_publish<br>
+                                Bot użyje kolumn: <strong>group_link</strong> (link do grupy) i <strong>post_copy</strong> (treść posta)
+                            </small>
+                            <button class="btn btn-success" id="loadCsvBtn" style="margin-top: 10px;">
+                                📥 Załaduj CSV
+                            </button>
+                        </div>
+
+                        <div id="csvPreview" style="display: none; margin-top: 20px; padding: 15px; background: #1a3a1a; border-radius: 5px;">
+                            <h4 style="color: #00ff88;">✅ CSV załadowany</h4>
+                            <p id="csvStats" style="color: #ccc;"></p>
+                        </div>
+
+                        <hr style="margin: 20px 0; border: 1px solid #333;">
+                        
+                        <div class="form-group">
+                            <label for="postMessage">LUB wpisz treść posta ręcznie:</label>
+                            <textarea id="postMessage" rows="6" placeholder="Wpisz treść swojego posta..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="groupsList">Grupy Facebook (po jednym URL w linii):</label>
+                            <textarea id="groupsList" rows="8" placeholder="https://www.facebook.com/groups/grupa1&#10;https://www.facebook.com/groups/grupa2&#10;..."></textarea>
+                            <small>Wklej URL-e grup, każda grupa w nowej linii</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="delayBetweenPosts">Opóźnienie między postami (sekundy):</label>
+                            <input type="number" id="delayBetweenPosts" value="60" min="30" max="600">
+                            <small>Rekomendowane: 60-120 sekund dla naturalnego zachowania</small>
+                        </div>
+
+                        <div class="control-panel">
+                            <button class="btn btn-success" id="startPostingBtn">
+                                ▶️ Rozpocznij postowanie
+                            </button>
+                            <button class="btn btn-warning" id="pausePostingBtn" disabled>
+                                ⏸️ Wstrzymaj
+                            </button>
+                            <button class="btn btn-info" id="resumePostingBtn" disabled>
+                                ▶️ Wznów
+                            </button>
+                            <button class="btn btn-danger" id="stopPostingBtn" disabled>
+                                ⏹️ Zatrzymaj
+                            </button>
+                        </div>
+
+                        <div class="progress-info" id="progressInfo" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <p id="progressText">0 / 0 grup</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel harmonogramu -->
+                <div class="tab-content" id="schedule">
+                    <h2>Harmonogram zadań</h2>
+                    <div class="card">
+                        <button class="btn btn-primary" id="addScheduleBtn">➕ Dodaj harmonogram</button>
+                        
+                        <div id="schedulesList" class="schedules-list">
+                            <!-- Dynamicznie dodawane harmonogramy -->
+                        </div>
+
+                        <!-- Modal dodawania harmonogramu -->
+                        <div class="modal" id="scheduleModal" style="display: none;">
+                            <div class="modal-content">
+                                <span class="close" id="closeScheduleModal">&times;</span>
+                                <h3>Nowy harmonogram</h3>
+                                
+                                <form id="scheduleForm">
+                                    <div class="form-group">
+                                        <label for="scheduleName">Nazwa:</label>
+                                        <input type="text" id="scheduleName" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="scheduleType">Typ:</label>
+                                        <select id="scheduleType">
+                                            <option value="once">Jednorazowo</option>
+                                            <option value="daily">Codziennie</option>
+                                            <option value="weekly">Co tydzień</option>
+                                            <option value="interval">Co X minut</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group" id="scheduleTimeGroup">
+                                        <label for="scheduleTime">Godzina:</label>
+                                        <input type="time" id="scheduleTime">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="scheduleMessage">Treść posta:</label>
+                                        <textarea id="scheduleMessage" rows="4"></textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="scheduleGroups">Grupy (po jednym URL w linii):</label>
+                                        <textarea id="scheduleGroups" rows="4"></textarea>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-success">Zapisz</button>
+                                        <button type="button" class="btn btn-secondary" id="cancelSchedule">Anuluj</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel proxy -->
+                <div class="tab-content" id="proxy">
+                    <h2>Konfiguracja Proxy</h2>
+                    <div class="card">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="proxyEnabled">
+                                Włącz proxy
+                            </label>
+                        </div>
+
+                        <div id="proxyConfig" style="display: none;">
+                            <div class="form-group">
+                                <label for="proxyHost">Host:</label>
+                                <input type="text" id="proxyHost" placeholder="79.110.198.37">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="proxyPort">Port:</label>
+                                <input type="number" id="proxyPort" placeholder="8080">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="proxyUsername">Username (opcjonalnie):</label>
+                                <input type="text" id="proxyUsername">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="proxyPassword">Hasło (opcjonalnie):</label>
+                                <input type="password" id="proxyPassword">
+                            </div>
+
+                            <button class="btn btn-primary" id="saveProxyBtn">💾 Zapisz konfigurację proxy</button>
+                            <button class="btn btn-secondary" id="testProxyBtn">🔍 Testuj proxy</button>
+                        </div>
+
+                        <div class="info-box">
+                            <strong>ℹ️ Informacja:</strong>
+                            <p>Proxy pomaga uniknąć blokad i zwiększa bezpieczeństwo. Obsługiwane są proxy HTTP/HTTPS.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel logów -->
+                <div class="tab-content" id="logs">
+                    <h2>Logi systemowe</h2>
+                    <div class="card">
+                        <div class="logs-header">
+                            <button class="btn btn-secondary btn-sm" id="clearLogsBtn">🗑️ Wyczyść logi</button>
+                            <button class="btn btn-secondary btn-sm" id="exportLogsBtn">📥 Eksportuj</button>
+                        </div>
+                        <div class="logs-container" id="logsContainer">
+                            <!-- Dynamicznie dodawane logi -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Instagram Checker -->
+                <div class="tab-content" id="instagram">
+                    <h2>📊 Instagram Checker - Sprawdzanie statystyk reklam</h2>
+                    <p class="text-muted">Automatycznie sprawdzaj wyświetlenia reklam na Instagram Reels</p>
+
+                    <div class="card">
+                        <h3>Konfiguracja</h3>
+                        
+                        <div class="form-group">
+                            <label for="instagramWebhook">Webhook URL (do wysyłania wyników)</label>
+                            <input 
+                                type="url" 
+                                id="instagramWebhook" 
+                                placeholder="https://webhook.site/your-unique-url"
+                                class="form-control"
+                            >
+                            <small class="text-muted">
+                                Wyniki zostaną wysłane POST requestem: {`{"url": "...", "views": 123}`}
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="instagramCookies">Instagram Cookies (opcjonalne, JSON array)</label>
+                            <textarea 
+                                id="instagramCookies" 
+                                rows="6"
+                                class="form-control"
+                                placeholder='[{"name":"sessionid","value":"xxx","domain":".instagram.com"}]'
+                            ></textarea>
+                            <small class="text-muted">
+                                Jeśli nie podasz cookies, musisz być zalogowany ręcznie w przeglądarce
+                            </small>
+                        </div>
+
+                        <button class="btn btn-primary" id="saveInstagramConfigBtn">💾 Zapisz konfigurację</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Linki do sprawdzenia</h3>
+                        
+                        <div class="form-group">
+                            <label for="instagramReelsLinks">Linki do Reels (jeden na linię)</label>
+                            <textarea 
+                                id="instagramReelsLinks" 
+                                rows="10"
+                                class="form-control"
+                                placeholder="https://www.instagram.com/reel/ABC123/&#10;https://www.instagram.com/reel/DEF456/&#10;https://www.instagram.com/reel/GHI789/"
+                            ></textarea>
+                            <small class="text-muted">
+                                Format: https://www.instagram.com/reel/SHORTCODE/ lub https://instagram.com/p/SHORTCODE/
+                            </small>
+                        </div>
+
+                        <div class="button-group">
+                            <button class="btn btn-success btn-large" id="startInstagramCheckBtn">
+                                ▶️ Rozpocznij sprawdzanie
+                            </button>
+                            <button class="btn btn-danger" id="stopInstagramCheckBtn" disabled>
+                                ⏹️ Stop
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Wyniki</h3>
+                        <div class="logs-container" id="instagramResults" style="height: 400px; overflow-y: auto;">
+                            <p class="text-muted">Wyniki pojawią się tutaj...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Playground -->
+                <div class="tab-content" id="playground">
+                    <h2>🎮 Playground - Automatyzacja AI</h2>
+                    <p class="text-muted">Opisz co chcesz zrobić językiem naturalnym, a AI wygeneruje i wykona kod.</p>
+
+                    <div class="card">
+                        <h3>Konfiguracja API</h3>
+                        <div class="form-group">
+                            <label for="anthropicApiKey">Google Gemini API Key</label>
+                            <input 
+                                type="password" 
+                                id="anthropicApiKey" 
+                                placeholder="AIza..."
+                                class="form-control"
+                            >
+                            <small class="text-muted">
+                                Pobierz klucz z: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a> (darmowy!)
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="geminiModel">Nazwa Modelu</label>
+                            <input 
+                                type="text" 
+                                id="geminiModel" 
+                                placeholder="gemini-1.5-flash-latest"
+                                class="form-control"
+                                value="gemini-1.5-flash-latest"
+                            >
+                            <small class="text-muted">
+                                Dostępne: gemini-1.5-flash-latest, gemini-1.5-pro-latest, gemini-2.0-flash-exp
+                            </small>
+                        </div>
+                        <button class="btn btn-primary" id="saveApiKeyBtn">💾 Zapisz konfigurację</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Automatyzacja</h3>
+                        
+                        <div class="form-group">
+                            <label for="playgroundUrl">Strona (URL)</label>
+                            <input 
+                                type="url" 
+                                id="playgroundUrl" 
+                                placeholder="https://instagram.com"
+                                class="form-control"
+                                value="https://instagram.com"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="playgroundInstructions">Czynności (język naturalny)</label>
+                            <textarea 
+                                id="playgroundInstructions" 
+                                rows="8"
+                                class="form-control"
+                                placeholder="Przykład:&#10;kliknij profile&#10;włącz rolkę z shortcode DQL4CaljyYW&#10;kliknij View insights&#10;odczytaj wartość liczbową obok napisu Views"
+                            >kliknij profile
+włącz rolkę z shortcode DQL4CaljyYW
+kliknij View insights
+odczytaj wartość liczbową obok napisu Views</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="playgroundCookies">Cookies (opcjonalne, JSON array)</label>
+                            <textarea 
+                                id="playgroundCookies" 
+                                rows="6"
+                                class="form-control"
+                                placeholder='[{"name":"sessionid","value":"xxx","domain":".instagram.com"}]'
+                            ></textarea>
+                            <small class="text-muted">
+                                Format: [{`"name":"...", "value":"...", "domain":"..."`}]
+                            </small>
+                        </div>
+
+                        <div class="button-group">
+                            <button class="btn btn-success btn-large" id="runPlaygroundBtn">
+                                ▶️ Automatyzuj
+                            </button>
+                            <button class="btn btn-danger" id="stopPlaygroundBtn" disabled>
+                                ⏹️ Stop
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Logi wykonania</h3>
+                        <div class="logs-container" id="playgroundLogs" style="height: 300px; overflow-y: auto; background: #1a1a1a; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 13px;">
+                            <p class="text-muted">Logi pojawią się tutaj...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel ustawień -->
+                <div class="tab-content" id="settings">
+                    <h2>Ustawienia</h2>
+                    
+                    <div class="card">
+                        <h3>🔑 API Token</h3>
+                        <p class="text-muted">Token do autoryzacji requestów API (dla n8n, Zapier, itp.)</p>
+                        
+                        <div class="form-group">
+                            <label for="apiTokenDisplay">Twój API Token:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input 
+                                    type="text" 
+                                    id="apiTokenDisplay" 
+                                    readonly 
+                                    style="flex: 1; font-family: monospace; background: #1a1a1a;"
+                                    value="Ładowanie..."
+                                >
+                                <button class="btn btn-primary" id="copyTokenBtn">📋 Kopiuj</button>
+                                <button class="btn btn-warning" id="regenerateTokenBtn">🔄 Regeneruj</button>
+                            </div>
+                            <small class="text-muted">
+                                Użyj w headerze: <code>Authorization: Bearer YOUR_TOKEN</code>
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>API Endpoints:</label>
+                            <div style="background: #1a1a1a; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;">
+                                <div>POST   http://localhost:3737/api/post</div>
+                                <div>GET    http://localhost:3737/api/queue</div>
+                                <div>GET    http://localhost:3737/api/status (public)</div>
+                                <div>POST   http://localhost:3737/api/start</div>
+                                <div>DELETE http://localhost:3737/api/queue</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Symulacja ludzkiego zachowania</h3>
+                        
+                        <div class="form-group">
+                            <label for="typingSpeed">Prędkość pisania:</label>
+                            <select id="typingSpeed">
+                                <option value="fast">Szybka</option>
+                                <option value="normal" selected>Normalna</option>
+                                <option value="slow">Wolna</option>
+                                <option value="thinking">Z zastanowieniem</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="randomDelays" checked>
+                                Losowe opóźnienia między akcjami
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="simulateReading" checked>
+                                Symuluj czytanie treści
+                            </label>
+                        </div>
+
+                        <h3>Detekcja CAPTCHA</h3>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="captchaAlerts" checked>
+                                Alerty o wykryciu CAPTCHA
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoPauseCaptcha" checked>
+                                Automatyczne wstrzymanie przy CAPTCHA
+                            </label>
+                        </div>
+
+                        <h3>Powiadomienia</h3>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="desktopNotifications" checked>
+                                Powiadomienia systemowe
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="soundAlerts">
+                                Dźwiękowe alerty
+                            </label>
+                        </div>
+
+                        <button class="btn btn-success" id="saveSettingsBtn">💾 Zapisz ustawienia</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Stopka -->
+        <footer class="footer">
+            <p>Facebook Group Automation v1.0.0 | Zbudowane z ❤️ | 
+                <span id="copyrightYear"></span>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Notyfikacje toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
